@@ -43,6 +43,7 @@
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
+//照片转正
 - (UIImage *)fixOrientation:(UIImage *)aImage {
     
     // No-op if the orientation is already correct
@@ -121,23 +122,17 @@
 
 
 -(void) detectWithImage: (UIImage*) image {
-    
-    
     FaceppResult *result = [[FaceppAPI detection] detectWithURL:nil orImageData:UIImageJPEGRepresentation(image, 0.5) mode:FaceppDetectionModeNormal attribute:FaceppDetectionAttributeNone];
     if (result.success) {
         double image_width = [[result content][@"img_width"] doubleValue] *0.01f;
         double image_height = [[result content][@"img_height"] doubleValue] * 0.01f;
-        
         UIGraphicsBeginImageContext(image.size);
         [image drawAtPoint:CGPointZero];
         CGContextRef context = UIGraphicsGetCurrentContext();
         CGContextSetRGBFillColor(context, 0, 0, 1.0, 1.0);
         CGContextSetLineWidth(context, image_width * 0.7f);
-        
         // draw rectangle in the image
-        int face_count = [[result content][@"face"] count];
-        
-        
+        NSUInteger face_count = [[result content][@"face"] count];
         for (int i=0; i<face_count; i++) {
             double width = [[result content][@"face"][i][@"position"][@"width"] doubleValue];
             double height = [[result content][@"face"][i][@"position"][@"height"] doubleValue];
@@ -146,23 +141,12 @@
                                      width * image_width,
                                      height * image_height);
             CGContextStrokeRect(context, rect);
-            
-            
             NSArray *a = [[result content] objectForKey:@"face"];
             for(NSDictionary *item in a){
-                
                 if (![[item objectForKey:@"face_id"] isEqualToString:@""]) {
-                    
-                    
                     if (isLogin==NO ) {
-                        
                         [faceIDArray addObject:item];
-                        
-                    }
-                    
-                    else if (isLogin==YES ) {
-                        
-                        
+                    }else if (isLogin==YES ) {
                         NSDictionary *data = [[NSDictionary alloc] initWithObjectsAndKeys:@"aaa",@"userName",faceIDArray,@"faceIDArray" ,nil];
                         NSMutableDictionary *parameters =[[NSMutableDictionary alloc] init];
                         [parameters setObject:data forKey:@"data"];
@@ -176,7 +160,6 @@
                              NSLog(@"注册成功");
                              NSNumber *statusCode = [[[responseObject objectForKey:@"d"] objectForKey:@"status"] objectForKey:@"statusCode"];
                              if([[NSString stringWithFormat:@"%@",statusCode] isEqualToString:@"200"]){
-//                                 isLogin = YES;
                                  NSLog(@"登录成功");
                              }
                             else{
@@ -189,23 +172,10 @@
                              NSLog(@"Error: %@", error);
                          }];
                         [[NSOperationQueue mainQueue] addOperation:op];
-                        
-                        
                     }
-                    
-                    
-                    
-                    
                 }
-                
             }
-            
-            
-            
         }
-        
-        
-        
     } else {
         // some errors occurred
         UIAlertView *alert = [[UIAlertView alloc]
